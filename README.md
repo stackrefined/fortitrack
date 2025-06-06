@@ -6,7 +6,7 @@ FortiTrack is a web-based dispatch tool designed for HVAC technicians and dispat
 
 - Secure authentication (Firebase Auth)
 - Role-based dashboard (Dispatch View)
-- Real-time job tracking (Firestore)
+- Real time tracking (Firestore)
 - Status filtering with color-coded chips
 - Mobile-responsive layout (Material UI)
 - Animated transitions & polished UI
