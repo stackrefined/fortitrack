@@ -37,3 +37,17 @@ Only authenticated users can access the dashboard via Firebase Auth. Protected r
 Demo creds: Username---- admin@fortitrack.com      Password---- password
 
 ## Structure Overview
+/public
+  ├── index.html          # HTML template
+  └── logo.png            # FortiTrack Logo
+
+/src
+  ├── components/
+  │   └── JobCard.js      # Reusable job display component
+  ├── pages/
+  │   └── Dashboard.js    # Main dashboard showing job data
+  ├── firebase.js         # Firebase configuration and Firestore setup
+  ├── App.js              # Root component with routing and layout
+  ├── index.js            # App entry point
+  └── styles/
+      └── custom.css      # Custom styles or theme overrides
