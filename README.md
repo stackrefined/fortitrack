@@ -21,7 +21,14 @@ FortiTrack is a web-based dispatch tool designed for HVAC technicians and dispat
 - **Git/GitHub** – version control
 
 ## Demo
+Pending deployment to Netlify.
 
+This app currently runs locally.
+To try it out:
+1. Clone the repo
+2. Install dependencies with `npm install`
+3. Start the development server with `npm start`
+4. Visit `http://localhost:3000` in your browser
 
 
 ## Authentication
