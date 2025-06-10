@@ -1,53 +1,106 @@
 # FortiTrack – HVAC Dispatch Prototype
 
-FortiTrack is a web-based dispatch tool designed for HVAC technicians and dispatch managers to track, manage, and monitor job assignments in real-time.
+FortiTrack is a modern, real-time dispatch platform designed for HVAC teams. Built with React and Firebase, it streamlines job assignment, technician tracking, and workflow management for field service organizations.
 
-## Features
+---
 
-- Secure authentication (Firebase Auth)
-- Role-based dashboard (Dispatch View)
-- Real time tracking (Firestore)
-- Status filtering with color-coded chips
-- Mobile-responsive layout (Material UI)
-- Animated transitions & polished UI
-- Future-ready for GPS/location tracking
+## Key Features
 
-## Built With
+- Secure authentication with role-based access (Firebase Auth)
+- Real-time job management and updates (Firestore listeners)
+- Technician dashboard with personalized job lists and status actions
+- Status filtering with color-coded indicators
+- Mobile-responsive interface (Material UI)
+- Animated transitions and branded visuals
+- Architecture supports future GPS/location tracking and analytics
 
-- **React.js** – frontend framework
-- **Firebase** – auth + real-time Firestore database
-- **Material UI** – UI components
-- **React Router** – routing and protection
-- **Git/GitHub** – version control
+---
+
+## Technology Stack
+
+- React.js – Frontend framework
+- Firebase – Authentication and real-time Firestore database
+- Material UI – UI components
+- React Router – Routing and dashboard protection
+- Git/GitHub – Version control
+
+---
+
+## Business Value
+
+- Improves field efficiency by enabling real-time collaboration between dispatchers and technicians
+- Cloud-native stack ensures reliability and data security
+- Modular codebase and cloud backend support rapid feature expansion
+
+---
 
 ## Demo
-Pending deployment to Netlify.
 
-This app currently runs locally.
-To try it out:
-1. Clone the repo
-2. Install dependencies with `npm install`
-3. Start the development server with `npm start`
-4. Visit `http://localhost:3000` in your browser
+Deployment to Netlify is pending.
 
+To run locally:
+
+```sh
+git clone https://github.com/yourusername/fortitrack.git
+cd fortitrack
+npm install
+npm start
+```
+Visit [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
 
 ## Authentication
 
-Only authenticated users can access the dashboard via Firebase Auth. Protected routes ensure secure login before data is shown. 
-Demo creds: Username---- admin@fortitrack.com      Password---- password
+Only authenticated users can access the dashboard.
 
-## Structure Overview
+Demo credentials:  
+- **Dispatcher:**  
+  - Username: `admin@fortitrack.com`  
+  - Password: `password`
+- **Technician:**  
+  - Username: `mike.tech@fortitrack.com`  
+  - Password: `password`
+
+---
+
+## Project Structure
+
+```
 /public
-  ├── index.html          # HTML template
-  └── logo.png            # FortiTrack Logo
+  ├── index.html
+  └── logo.png
 
 /src
   ├── components/
-  │   └── JobCard.js      # Reusable job display component
+  │   └── JobCard.js
   ├── pages/
-  │   └── Dashboard.js    # Main dashboard showing job data
-  ├── firebase.js         # Firebase configuration and Firestore setup
-  ├── App.js              # Root component with routing and layout
-  ├── index.js            # App entry point
+  │   └── Dashboard.jsx
+  ├── firebase.js
+  ├── App.js
+  ├── index.js
   └── styles/
-      └── custom.css      # Custom styles or theme overrides
+      └── custom.css
+```
+
+---
+
+## Roadmap
+
+- GPS/location tracking for technicians
+- Push notifications for job updates
+- Admin dashboard for user and role management
+- Offline support for field teams
+
+---
+
+## About the Author
+
+**Stack Refined (Thomas W.)**  
+Full Stack Developer | Cloud Solutions | Field Service Technology
+
+For questions or collaboration, please email: [stackrefined.dev@proton.me](mailto:stackrefined.dev@proton.me)
+
+---
+
+This project demonstrates scalable, real-time web solutions for field service operations.
