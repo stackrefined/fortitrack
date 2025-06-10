@@ -40,7 +40,152 @@
 
 .login-form-title {
   color: #fff;
-  font-weight: 700;
+  font-family: 'Montserrat', 'Inter', 'Poppins', Arial, sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   margin-bottom: 1.5rem;
   text-align: center;
+  text-shadow: 0 2px 12px rgba(23, 78, 166, 0.18), 0 0 8px #2563eb44;
+  border-bottom: 2px solid #60a5fa;
+  display: inline-block;
+  padding-bottom: 0.25em;
+}
+
+.login-logo {
+  width: 180px;           /* Increased from 120px */
+  margin-bottom: 2rem;    /* Slightly more space below */
+  transition: 
+    transform 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1);
+  opacity: 1;
+  display: block;
+  /* Add a soft white glow and drop shadow */
+  filter: drop-shadow(0 4px 16px rgba(255,255,255,0.7))
+          drop-shadow(0 1px 2px rgba(23,78,166,0.15));
+}
+
+.login-logo.logo-hide {
+  transform: scale(1.5);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.login-background form input[type="email"],
+.login-background form input[type="password"] {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.12);
+  color: #fff !important;
+  font-size: 1rem;
+  outline: none;
+}
+
+.login-background form input[type="email"]::placeholder,
+.login-background form input[type="password"]::placeholder {
+  color: #e0e7ef;
+  opacity: 1;
+}
+
+.login-background form button[type="submit"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.login-background form button[type="submit"]:hover {
+  background: #174ea6;
+}
+
+.fortitrack-title {
+  font-family: 'Merriweather', serif;
+  font-weight: 900;
+  font-size: 2.7rem;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 1.2rem;
+  text-shadow: 0 2px 12px rgba(23, 78, 166, 0.15);
+  opacity: 0;
+  letter-spacing: 0em;
+  animation: spacedTitle 1.8s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+
+@keyframes spacedTitle {
+  from {
+    letter-spacing: 0em;
+    opacity: 0;
+    transform: translateY(0);
+  }
+  to {
+    letter-spacing: 0.18em;
+    opacity: 1;
+    transform: translateY(-18px);
+  }
+}
+
+.typed-terminal {
+  display: inline-block;
+  white-space: pre-wrap;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  font-weight: 700;
+  font-size: 1.08em;
+  background: rgba(23, 78, 166, 0.10);
+  padding: 0.5em 1em;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(23, 78, 166, 0.08);
+  color: #fff;
+}
+
+.stackrefined-banner {
+  font-family: 'Inter', 'Montserrat', 'Poppins', Arial, sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #fff;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 2.5rem;
+  margin-top: 1.2rem;
+  text-shadow:
+    0 2px 12px rgba(23, 78, 166, 0.18),
+    0 0 8px #2563eb44,
+    0 1px 0 #fff4;
+  opacity: 0;
+  transform: translateY(-32px);
+  animation: stackrefinedFadeIn 1.2s cubic-bezier(0.4,0,0.2,1) 0.2s forwards;
+  letter-spacing: 0.18em;
+}
+
+.stackrefined-banner .brand {
+  color: #60a5fa; /* Accent blue for brand */
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-shadow:
+    0 2px 16px #60a5fa55,
+    0 0 8px #fff8;
+}
+
+@keyframes stackrefinedFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-32px);
+    letter-spacing: 0.5em;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    letter-spacing: 0.18em;
+  }
 }

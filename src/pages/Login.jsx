@@ -1,16 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Paper, Typography, TextField, Button, Alert } from '@mui/material';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import './Login.css';
 
+const terminalText = `FortiTrack is a real-time dispatch and job tracking platform for HVAC teams.
+Dispatchers can assign jobs, technicians can update status, and admins oversee operations—all in one secure, cloud-based system.`;
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [mouse, setMouse] = useState({ x: 50, y: 50 });
+  const [logoHidden, setLogoHidden] = useState(false);
+  const [typed, setTyped] = useState('');
+  const [showCursor, setShowCursor] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let i = 0;
+    setTyped('');
+    setShowCursor(true);
+    const typeInterval = setInterval(() => {
+      setTyped(terminalText.slice(0, i + 1));
+      i++;
+      if (i === terminalText.length) {
+        clearInterval(typeInterval);
+        setShowCursor(true);
+      }
+    }, 25); // Slightly faster typing effect
+    return () => clearInterval(typeInterval);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -32,16 +53,32 @@ export default function Login() {
     setMouse({ x, y });
   };
 
+  const handleFormFocus = () => setLogoHidden(true);
+  const handleFormBlur = (e) => {
+    // Only show logo again if focus moves outside the form
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setLogoHidden(false);
+    }
+  };
+
   return (
     <div className="login-background">
-      <div className="product-info">
-        <h1>FortiTrack</h1>
-        <p>
-          FortiTrack is a real-time dispatch and job tracking platform for HVAC teams.<br />
-          Dispatchers can assign jobs, technicians can update status, and admins oversee operations—all in one secure, cloud-based system.
-        </p>
+      <div className="stackrefined-banner">
+        A <span className="brand">Stackrefined</span> Solution
       </div>
-      <form onSubmit={handleLogin}>
+      <img
+        src="/logo.png"
+        alt="FortiTrack Logo"
+        className={`login-logo${logoHidden ? ' logo-hide' : ''}`}
+      />
+      <div className="product-info">
+        <h1 className="fortitrack-title">FortiTrack</h1>
+        <span className="typed-terminal">
+          {typed}
+          <span className="terminal-cursor">{showCursor ? "█" : ""}</span>
+        </span>
+      </div>
+      <form onSubmit={handleLogin} onFocus={handleFormFocus} onBlur={handleFormBlur} tabIndex={-1}>
         <h2 className="login-form-title">Sign In</h2>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
