@@ -20,6 +20,7 @@ import {
 import { useUser } from "../contexts/UserContext";
 import JobCreationForm from "../components/JobCreationForm";
 import JobsTable from "../components/JobsTable";
+import TechnicianJobs from "../components/TechnicianJobs"; // Add this import
 
 export default function Dashboard() {
   const { role, loading: userLoading } = useUser();
@@ -81,7 +82,7 @@ export default function Dashboard() {
   if (role === "technician") {
     tabs.push({
       label: "My Jobs",
-      component: <div>Technician jobs coming soon</div>,
+      component: <TechnicianJobs />,
     });
   }
 

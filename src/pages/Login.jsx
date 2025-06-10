@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Paper, Typography, TextField, Button, Alert } from '@mui/material';
+import { Box, Paper, Typography, TextField, Button, Alert, IconButton, InputAdornment } from '@mui/material';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import './Login.css';
 
 const terminalText = `FortiTrack is a real-time dispatch and job tracking platform for HVAC teams.
@@ -16,6 +17,7 @@ export default function Login() {
   const [logoHidden, setLogoHidden] = useState(false);
   const [typed, setTyped] = useState('');
   const [showCursor, setShowCursor] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -119,12 +121,12 @@ export default function Login() {
         />
         <TextField
           label="Password"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           variant="outlined"
           fullWidth
           margin="normal"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={e => setPassword(e.target.value)}
           required
           sx={{
             backgroundColor: 'white',
@@ -132,6 +134,9 @@ export default function Login() {
             '& .MuiOutlinedInput-root': {
               backgroundColor: 'white',
               borderRadius: 1,
+              '& input': {
+                color: 'black', // <-- This ensures the dots are visible
+              },
               '& fieldset': {
                 borderColor: 'limegreen',
               },
@@ -142,6 +147,19 @@ export default function Login() {
                 borderColor: 'limegreen',
               },
             },
+          }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={() => setShowPassword((show) => !show)}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
           }}
         />
         <Button

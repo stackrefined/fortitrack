@@ -1,115 +1,65 @@
-import React, { useEffect, useState } from "react";
-import { db } from "../firebase";
-import { collection, query, where, onSnapshot, doc, updateDoc } from "firebase/firestore";
-import { useUser } from "../contexts/UserContext";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  CircularProgress,
-} from "@mui/material";
+import React, { useEffect, useState } from 'react';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
+import { useUser } from '../contexts/UserContext';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 
 export default function TechnicianJobs() {
   const { user } = useUser();
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
-    const q = query(collection(db, "jobs"), where("techId", "==", user.uid));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const q = query(
+      collection(db, 'jobs'),
+      where('assignedTo', '==', user.uid)
+    );
+    const unsub = onSnapshot(q, (snapshot) => {
       const jobsData = [];
-      querySnapshot.forEach((doc) => {
-        jobsData.push({ id: doc.id, ...doc.data() });
-      });
+      snapshot.forEach(doc => jobsData.push({ id: doc.id, ...doc.data() }));
       setJobs(jobsData);
-      setLoading(false);
     });
-    return () => unsubscribe();
+    return () => unsub();
   }, [user]);
 
-  const handleStatusUpdate = async (jobId, newStatus) => {
-    await updateDoc(doc(db, "jobs", jobId), { status: newStatus });
-  };
-
-  if (loading) {
-    return (
-      <Paper sx={{ p: 2, mt: 2, textAlign: "center" }}>
-        <CircularProgress />
-      </Paper>
-    );
-  }
-
   return (
-    <TableContainer component={Paper} sx={{ mt: 2 }}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Title</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell>Address</TableCell>
-            <TableCell>Date</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {jobs.map((job) => (
-            <TableRow key={job.id}>
-              <TableCell>{job.title}</TableCell>
-              <TableCell>{job.description}</TableCell>
-              <TableCell>{job.address}</TableCell>
-              <TableCell>
-                {job.date && job.date.toDate
-                  ? job.date.toDate().toLocaleString()
-                  : ""}
-              </TableCell>
-              <TableCell>{job.status}</TableCell>
-              <TableCell>
-                {job.status === "pending" && (
-                  <>
-                    <Button
-                      size="small"
-                      color="success"
-                      variant="contained"
-                      sx={{ mr: 1 }}
-                      onClick={() => handleStatusUpdate(job.id, "accepted")}
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      size="small"
-                      color="error"
-                      variant="contained"
-                      onClick={() => handleStatusUpdate(job.id, "declined")}
-                    >
-                      Decline
-                    </Button>
-                  </>
-                )}
-                {job.status === "accepted" && (
-                  <Button
-                    size="small"
-                    color="primary"
-                    variant="contained"
-                    onClick={() => handleStatusUpdate(job.id, "completed")}
-                  >
-                    Mark Complete
-                  </Button>
-                )}
-                {(job.status === "declined" || job.status === "completed") && (
-                  <span>No actions</span>
-                )}
-              </TableCell>
+    <Paper sx={{ p: 3, mb: 4 }}>
+      <Typography variant="h6" gutterBottom>
+        My Jobs
+      </Typography>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Title</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Status</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {jobs.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3}>No jobs assigned.</TableCell>
+              </TableRow>
+            ) : (
+              jobs.map(job => (
+                <TableRow key={job.id}>
+                  <TableCell>{job.title}</TableCell>
+                  <TableCell>{job.description}</TableCell>
+                  <TableCell>{job.status}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
   );
 }

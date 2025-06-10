@@ -1,125 +1,90 @@
 import React, { useState, useEffect } from "react";
-import { TextField, Button, Box, MenuItem } from "@mui/material";
-import { collection, addDoc, Timestamp, onSnapshot, query, where } from "firebase/firestore";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
 
 export default function JobCreationForm() {
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    address: "",
-    date: "",
-    technician: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [technicians, setTechnicians] = useState([]);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [assignedTo, setAssignedTo] = useState("");
+  const [techs, setTechs] = useState([]);
 
   useEffect(() => {
-    // Fetch all users with role "technician"
-    const q = query(collection(db, "users"), where("role", "==", "technician"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const techs = [];
-      snapshot.forEach((doc) => {
-        techs.push({ id: doc.id, ...doc.data() });
+    // Fetch all users with role 'technician'
+    async function fetchTechs() {
+      const usersSnap = await getDocs(collection(db, "users"));
+      const techList = [];
+      usersSnap.forEach((doc) => {
+        const data = doc.data();
+        if (data.role === "technician") {
+          techList.push({ uid: doc.id, email: data.email });
+        }
       });
-      setTechnicians(techs);
-      console.log("Fetched technicians:", techs); // <-- Add this line
-    });
-    return () => unsubscribe();
+      setTechs(techList);
+    }
+    fetchTechs();
   }, []);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      await addDoc(collection(db, "jobs"), {
-        title: form.title,
-        description: form.description,
-        address: form.address,
-        date: Timestamp.fromDate(new Date(form.date)),
-        techId: form.technician,
-        status: "pending",
-        createdAt: Timestamp.now(),
-      });
-      setSuccess(true);
-      setForm({
-        title: "",
-        description: "",
-        address: "",
-        date: "",
-        technician: "",
-      });
-    } catch (error) {
-      alert("Error creating job: " + error.message);
-    }
-    setLoading(false);
+    if (!assignedTo) return;
+    await addDoc(collection(db, "jobs"), {
+      title,
+      description,
+      assignedTo, // This is the UID
+      status: "assigned",
+      createdAt: new Date(),
+    });
+    setTitle("");
+    setDescription("");
+    setAssignedTo("");
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 400, mx: "auto", mt: 4 }}>
-      <TextField
-        label="Title"
-        name="title"
-        value={form.title}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        required
-      />
-      <TextField
-        label="Description"
-        name="description"
-        value={form.description}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        required
-      />
-      <TextField
-        label="Address"
-        name="address"
-        value={form.address}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        required
-      />
-      <TextField
-        label="Date/Time"
-        name="date"
-        type="datetime-local"
-        value={form.date}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        InputLabelProps={{ shrink: true }}
-        required
-      />
-      <TextField
-        select
-        label="Assign Technician"
-        name="technician"
-        value={form.technician}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-        required
-      >
-        {technicians.map((tech) => (
-          <MenuItem key={tech.id} value={tech.id}>
-            {tech.email || tech.id}
-          </MenuItem>
-        ))}
-      </TextField>
-      <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
-        {loading ? "Creating..." : "Create Job"}
-      </Button>
-      {success && <Box color="green" mt={2}>Job created successfully!</Box>}
-    </Box>
+    <Paper sx={{ p: 3, mb: 4 }}>
+      <Typography variant="h6" gutterBottom>
+        Create Job
+      </Typography>
+      <form onSubmit={handleSubmit}>
+        <TextField
+          label="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          fullWidth
+          required
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          fullWidth
+          required
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          select
+          label="Assign to Technician"
+          value={assignedTo}
+          onChange={(e) => setAssignedTo(e.target.value)}
+          fullWidth
+          required
+          sx={{ mb: 2 }}
+        >
+          {techs.map((tech) => (
+            <MenuItem key={tech.uid} value={tech.uid}>
+              {tech.email}
+            </MenuItem>
+          ))}
+        </TextField>
+        <Button type="submit" variant="contained" color="primary">
+          Create Job
+        </Button>
+      </form>
+    </Paper>
   );
 }
