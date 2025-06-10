@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../firebase";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, getDocs } from "firebase/firestore";
 import {
   Box,
   Button,
@@ -16,6 +16,8 @@ import {
   CircularProgress,
   Tabs,
   Tab,
+  TextField,
+  MenuItem,
 } from "@mui/material";
 import { useUser } from "../contexts/UserContext";
 import JobCreationForm from "../components/JobCreationForm";
@@ -27,6 +29,9 @@ export default function Dashboard() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState(0);
+  const [assignedTo, setAssignedTo] = useState("");
+  const [techs, setTechs] = useState([]);
+  const [users, setUsers] = useState({});
 
   useEffect(() => {
     // Set up real-time listener for jobs collection
@@ -40,6 +45,27 @@ export default function Dashboard() {
     });
     // Clean up listener on unmount
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // Fetch technicians for assignment
+    const fetchTechnicians = async () => {
+      const techsData = []; // Assume this gets filled with technician data
+      setTechs(techsData);
+    };
+    fetchTechnicians();
+  }, []);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      const usersSnap = await getDocs(collection(db, "users"));
+      const userMap = {};
+      usersSnap.forEach((doc) => {
+        userMap[doc.id] = doc.data().email;
+      });
+      setUsers(userMap);
+    }
+    fetchUsers();
   }, []);
 
   const handleLogout = async () => {
@@ -122,6 +148,23 @@ export default function Dashboard() {
           ))}
         </Tabs>
         <Box sx={{ mt: 2 }}>{tabs[tab]?.component}</Box>
+        {role !== "technician" && (
+          <TextField
+            select
+            label="Assign to Technician"
+            value={assignedTo}
+            onChange={(e) => setAssignedTo(e.target.value)}
+            fullWidth
+            required
+            sx={{ mb: 2 }}
+          >
+            {techs.map((tech) => (
+              <MenuItem key={tech.uid} value={tech.uid}>
+                {tech.email}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
       </Paper>
     </Box>
   );
