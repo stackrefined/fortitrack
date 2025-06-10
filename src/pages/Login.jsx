@@ -78,7 +78,13 @@ export default function Login() {
           <span className="terminal-cursor">{showCursor ? "█" : ""}</span>
         </span>
       </div>
-      <form onSubmit={handleLogin} onFocus={handleFormFocus} onBlur={handleFormBlur} tabIndex={-1}>
+      <form
+        onSubmit={handleLogin}
+        onFocus={handleFormFocus}
+        onBlur={handleFormBlur}
+        tabIndex={-1}
+        style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}
+      >
         <h2 className="login-form-title">Sign In</h2>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -93,6 +99,23 @@ export default function Login() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          sx={{
+            backgroundColor: 'white',
+            borderRadius: 1,
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: 'white',
+              borderRadius: 1,
+              '& fieldset': {
+                borderColor: 'limegreen',
+              },
+              '&:hover fieldset': {
+                borderColor: 'limegreen',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: 'limegreen',
+              },
+            },
+          }}
         />
         <TextField
           label="Password"
@@ -103,6 +126,23 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          sx={{
+            backgroundColor: 'white',
+            borderRadius: 1,
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: 'white',
+              borderRadius: 1,
+              '& fieldset': {
+                borderColor: 'limegreen',
+              },
+              '&:hover fieldset': {
+                borderColor: 'limegreen',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: 'limegreen',
+              },
+            },
+          }}
         />
         <Button
           type="submit"
