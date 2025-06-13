@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useUser } from '../contexts/UserContext';
 import Paper from '@mui/material/Paper';
@@ -10,10 +10,20 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import CircularProgress from '@mui/material/CircularProgress';
+
+const STATUS_OPTIONS = [
+  { value: 'assigned', label: 'Assigned' },
+  { value: 'in progress', label: 'In Progress' },
+  { value: 'complete', label: 'Complete' },
+];
 
 export default function TechnicianJobs() {
   const { user } = useUser();
   const [jobs, setJobs] = useState([]);
+  const [updating, setUpdating] = useState({}); // Track updating state per job
 
   useEffect(() => {
     if (!user) return;
@@ -28,6 +38,16 @@ export default function TechnicianJobs() {
     });
     return () => unsub();
   }, [user]);
+
+  const handleStatusChange = async (jobId, newStatus) => {
+    setUpdating((prev) => ({ ...prev, [jobId]: true }));
+    try {
+      await updateDoc(doc(db, 'jobs', jobId), { status: newStatus });
+    } catch (err) {
+      alert('Failed to update status. Please try again.');
+    }
+    setUpdating((prev) => ({ ...prev, [jobId]: false }));
+  };
 
   return (
     <Paper sx={{ p: 3, mb: 4 }}>
@@ -53,7 +73,24 @@ export default function TechnicianJobs() {
                 <TableRow key={job.id}>
                   <TableCell>{job.title}</TableCell>
                   <TableCell>{job.description}</TableCell>
-                  <TableCell>{job.status}</TableCell>
+                  <TableCell>
+                    <Select
+                      value={job.status}
+                      onChange={e => handleStatusChange(job.id, e.target.value)}
+                      size="small"
+                      disabled={updating[job.id]}
+                      sx={{ minWidth: 120 }}
+                    >
+                      {STATUS_OPTIONS.map(opt => (
+                        <MenuItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {updating[job.id] && (
+                      <CircularProgress size={18} sx={{ ml: 1 }} />
+                    )}
+                  </TableCell>
                 </TableRow>
               ))
             )}
