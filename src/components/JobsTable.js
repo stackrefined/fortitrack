@@ -36,6 +36,13 @@ export default function JobsTable() {
     return () => unsub();
   }, []);
 
+  // Helper to format Firestore Timestamp or JS Date
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    if (date.seconds) return new Date(date.seconds * 1000).toLocaleString();
+    return new Date(date).toLocaleString();
+  };
+
   return (
     <Paper sx={{ p: 3, mb: 4 }}>
       <Typography variant="h6" gutterBottom>
@@ -49,6 +56,10 @@ export default function JobsTable() {
               <TableCell>Description</TableCell>
               <TableCell>Assigned To</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Created By</TableCell>
+              <TableCell>Created At</TableCell>
+              <TableCell>Last Updated By</TableCell>
+              <TableCell>Last Updated At</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -58,6 +69,10 @@ export default function JobsTable() {
                 <TableCell>{job.description}</TableCell>
                 <TableCell>{users[job.assignedTo] || job.assignedTo}</TableCell>
                 <TableCell>{job.status}</TableCell>
+                <TableCell>{users[job.createdBy] || job.createdBy || "N/A"}</TableCell>
+                <TableCell>{formatDate(job.createdAt)}</TableCell>
+                <TableCell>{users[job.lastUpdatedBy] || job.lastUpdatedBy || "N/A"}</TableCell>
+                <TableCell>{formatDate(job.lastUpdatedAt)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -6,12 +6,14 @@ import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
+import { useUser } from "../contexts/UserContext";
 
 export default function JobCreationForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
   const [techs, setTechs] = useState([]);
+  const { user } = useUser(); // Add this line
 
   useEffect(() => {
     // Fetch all users with role 'technician'
@@ -38,6 +40,7 @@ export default function JobCreationForm() {
       assignedTo, // This is the UID
       status: "assigned",
       createdAt: new Date(),
+      createdBy: user?.uid || "unknown", // Add this line
     });
     setTitle("");
     setDescription("");

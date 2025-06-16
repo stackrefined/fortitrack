@@ -13,6 +13,7 @@ import TableRow from '@mui/material/TableRow';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
+import Snackbar from '@mui/material/Snackbar';
 
 const STATUS_OPTIONS = [
   { value: 'assigned', label: 'Assigned' },
@@ -24,6 +25,7 @@ export default function TechnicianJobs() {
   const { user } = useUser();
   const [jobs, setJobs] = useState([]);
   const [updating, setUpdating] = useState({}); // Track updating state per job
+  const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     if (!user) return;
@@ -42,9 +44,14 @@ export default function TechnicianJobs() {
   const handleStatusChange = async (jobId, newStatus) => {
     setUpdating((prev) => ({ ...prev, [jobId]: true }));
     try {
-      await updateDoc(doc(db, 'jobs', jobId), { status: newStatus });
+      await updateDoc(doc(db, 'jobs', jobId), {
+        status: newStatus,
+        lastUpdatedAt: new Date(),
+        lastUpdatedBy: user?.uid || "unknown",
+      });
+      setSnack({ open: true, message: 'Status updated!', severity: 'success' });
     } catch (err) {
-      alert('Failed to update status. Please try again.');
+      setSnack({ open: true, message: 'Failed to update status.', severity: 'error' });
     }
     setUpdating((prev) => ({ ...prev, [jobId]: false }));
   };
@@ -97,6 +104,12 @@ export default function TechnicianJobs() {
           </TableBody>
         </Table>
       </TableContainer>
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={3000}
+        onClose={() => setSnack({ ...snack, open: false })}
+        message={snack.message}
+      />
     </Paper>
   );
 }
