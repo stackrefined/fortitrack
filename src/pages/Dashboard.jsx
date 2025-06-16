@@ -7,66 +7,20 @@ import {
   Button,
   Typography,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  CircularProgress,
   Tabs,
   Tab,
-  TextField,
-  MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import { useUser } from "../contexts/UserContext";
 import JobCreationForm from "../components/JobCreationForm";
 import JobsTable from "../components/JobsTable";
-import TechnicianJobs from "../components/TechnicianJobs"; // Add this import
+import TechnicianJobs from "../components/TechnicianJobs";
+import AdminUsersTab from "../components/AdminUsersTab"; // If you have this
+import "../App.css"; // Ensure this imports .fortitrack-background and .login-logo
 
 export default function Dashboard() {
   const { role, loading: userLoading } = useUser();
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState(0);
-  const [assignedTo, setAssignedTo] = useState("");
-  const [techs, setTechs] = useState([]);
-  const [users, setUsers] = useState({});
-
-  useEffect(() => {
-    // Set up real-time listener for jobs collection
-    const unsubscribe = onSnapshot(collection(db, "jobs"), (querySnapshot) => {
-      const jobsData = [];
-      querySnapshot.forEach((doc) => {
-        jobsData.push({ id: doc.id, ...doc.data() });
-      });
-      setJobs(jobsData);
-      setLoading(false);
-    });
-    // Clean up listener on unmount
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    // Fetch technicians for assignment
-    const fetchTechnicians = async () => {
-      const techsData = []; // Assume this gets filled with technician data
-      setTechs(techsData);
-    };
-    fetchTechnicians();
-  }, []);
-
-  useEffect(() => {
-    async function fetchUsers() {
-      const usersSnap = await getDocs(collection(db, "users"));
-      const userMap = {};
-      usersSnap.forEach((doc) => {
-        userMap[doc.id] = doc.data().email;
-      });
-      setUsers(userMap);
-    }
-    fetchUsers();
-  }, []);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -74,7 +28,11 @@ export default function Dashboard() {
   };
 
   if (userLoading) {
-    return <Typography>Loading...</Typography>;
+    return (
+      <Box className="fortitrack-background" sx={{ minHeight: "100vh" }}>
+        <CircularProgress sx={{ mt: 8 }} />
+      </Box>
+    );
   }
 
   // Define which tabs are visible for each role
@@ -82,7 +40,7 @@ export default function Dashboard() {
   if (role === "admin") {
     tabs.push({
       label: "Users",
-      component: <div>Users management coming soon</div>,
+      component: <AdminUsersTab />, // Swap in your real user management tab
     });
     tabs.push({
       label: "Jobs",
@@ -113,58 +71,58 @@ export default function Dashboard() {
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        p: 4,
-        fontFamily: "'Poppins', sans-serif",
-      }}
-    >
+    <Box className="fortitrack-background">
+      <div className="stackrefined-banner">
+        A <span className="brand">Stackrefined</span> Solution
+      </div>
+      <img src="/logo.png" alt="FortiTrack Logo" className="login-logo" />
       <Paper
         elevation={8}
         sx={{
-          p: 4,
+          p: { xs: 2, sm: 4 },
           maxWidth: 900,
           width: "100%",
-          borderRadius: 4,
+          borderRadius: 3,
           backgroundColor: "#fff",
+          color: "#174ea6",
+          mt: 2,
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <Typography variant="h4" fontWeight={700}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            mb: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Typography
+            variant="h4"
+            fontWeight={700}
+            sx={{ color: "#174ea6" }}
+          >
             FortiTrack Dashboard
           </Typography>
           <Button variant="outlined" color="secondary" onClick={handleLogout}>
             Logout
           </Button>
         </Box>
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+        <Tabs
+          value={tab}
+          onChange={(_, v) => setTab(v)}
+          sx={{
+            mb: 2,
+            "& .MuiTab-root": { fontWeight: 700, color: "#174ea6" },
+            "& .Mui-selected": { color: "#2563eb" },
+          }}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
           {tabs.map((t) => (
             <Tab key={t.label} label={t.label} />
           ))}
         </Tabs>
         <Box sx={{ mt: 2 }}>{tabs[tab]?.component}</Box>
-        {role !== "technician" && (
-          <TextField
-            select
-            label="Assign to Technician"
-            value={assignedTo}
-            onChange={(e) => setAssignedTo(e.target.value)}
-            fullWidth
-            required
-            sx={{ mb: 2 }}
-          >
-            {techs.map((tech) => (
-              <MenuItem key={tech.uid} value={tech.uid}>
-                {tech.email}
-              </MenuItem>
-            ))}
-          </TextField>
-        )}
       </Paper>
     </Box>
   );
