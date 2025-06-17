@@ -45,34 +45,44 @@ export default function JobsTable() {
 
   return (
     <Paper sx={{ p: 3, mb: 4 }}>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h6" gutterBottom sx={{
+        fontWeight: 900,
+        fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+        color: "#174ea6"
+      }}>
         Jobs Table
       </Typography>
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Assigned To</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Created By</TableCell>
-              <TableCell>Created At</TableCell>
-              <TableCell>Last Updated By</TableCell>
-              <TableCell>Last Updated At</TableCell>
+              {["Title", "Description", "Assigned To", "Status", "Created By", "Created At", "Last Updated By", "Last Updated At"].map(header => (
+                <TableCell
+                  key={header}
+                  sx={{
+                    fontWeight: 900,
+                    fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+                    color: "#174ea6",
+                    fontSize: "1.08rem",
+                    background: "#eaf6fb"
+                  }}
+                >
+                  {header}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
             {jobs.map((job) => (
               <TableRow key={job.id}>
-                <TableCell>{job.title}</TableCell>
-                <TableCell>{job.description}</TableCell>
-                <TableCell>{users[job.assignedTo] || job.assignedTo}</TableCell>
-                <TableCell>{job.status}</TableCell>
-                <TableCell>{users[job.createdBy] || job.createdBy || "N/A"}</TableCell>
-                <TableCell>{formatDate(job.createdAt)}</TableCell>
-                <TableCell>{users[job.lastUpdatedBy] || job.lastUpdatedBy || "N/A"}</TableCell>
-                <TableCell>{formatDate(job.lastUpdatedAt)}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{job.title}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{job.description}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{users[job.assignedTo] || job.assignedTo}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{job.status}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{users[job.createdBy] || job.createdBy || "N/A"}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{formatDate(job.createdAt)}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{users[job.lastUpdatedBy] || job.lastUpdatedBy || "N/A"}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{formatDate(job.lastUpdatedAt)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

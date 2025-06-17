@@ -7,6 +7,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import { useUser } from "../contexts/UserContext";
+import { useNotification } from "../contexts/NotificationContext";
 
 export default function JobCreationForm() {
   const [title, setTitle] = useState("");
@@ -14,6 +15,7 @@ export default function JobCreationForm() {
   const [assignedTo, setAssignedTo] = useState("");
   const [techs, setTechs] = useState([]);
   const { user } = useUser(); // Add this line
+  const { setSnack } = useNotification();
 
   useEffect(() => {
     // Fetch all users with role 'technician'
@@ -45,6 +47,7 @@ export default function JobCreationForm() {
     setTitle("");
     setDescription("");
     setAssignedTo("");
+    setSnack({ open: true, message: "Action successful!", severity: "success" });
   };
 
   return (
@@ -59,7 +62,49 @@ export default function JobCreationForm() {
           onChange={(e) => setTitle(e.target.value)}
           fullWidth
           required
-          sx={{ mb: 2 }}
+          sx={{
+            mb: 2,
+            fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+            fontWeight: 700,
+            fontSize: { xs: '1.08rem', sm: '1.12rem' },
+            color: '#174ea6',
+            backgroundColor: '#f6faff',
+            borderRadius: 2,
+            '& .MuiOutlinedInput-root': {
+              fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+              fontWeight: 700,
+              fontSize: { xs: '1.08rem', sm: '1.12rem' },
+              color: '#174ea6',
+              backgroundColor: '#f6faff',
+              borderRadius: 2,
+              '& input': {
+                color: '#174ea6',
+                fontWeight: 700,
+                fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+              },
+              '& fieldset': {
+                borderColor: 'limegreen',
+              },
+              '&:hover fieldset': {
+                borderColor: '#2563eb',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#174ea6',
+              },
+            },
+          }}
+          InputLabelProps={{
+            style: {
+              color: '#174ea6',
+              background: '#fff',
+              padding: '0 4px',
+              borderRadius: '4px',
+              fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+              fontWeight: 700,
+              fontSize: '1.08rem',
+              letterSpacing: '0.01em',
+            }
+          }}
         />
         <TextField
           label="Description"
@@ -67,7 +112,51 @@ export default function JobCreationForm() {
           onChange={(e) => setDescription(e.target.value)}
           fullWidth
           required
-          sx={{ mb: 2 }}
+          multiline
+          minRows={2}
+          sx={{
+            mb: 2,
+            fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+            fontWeight: 700,
+            fontSize: { xs: '1.08rem', sm: '1.12rem' },
+            color: '#174ea6',
+            backgroundColor: '#f6faff',
+            borderRadius: 2,
+            '& .MuiOutlinedInput-root': {
+              fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+              fontWeight: 700,
+              fontSize: { xs: '1.08rem', sm: '1.12rem' },
+              color: '#174ea6',
+              backgroundColor: '#f6faff',
+              borderRadius: 2,
+              '& input': {
+                color: '#174ea6',
+                fontWeight: 700,
+                fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+              },
+              '& fieldset': {
+                borderColor: 'limegreen',
+              },
+              '&:hover fieldset': {
+                borderColor: '#2563eb',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#174ea6',
+              },
+            },
+          }}
+          InputLabelProps={{
+            style: {
+              color: '#174ea6',
+              background: '#fff',
+              padding: '0 4px',
+              borderRadius: '4px',
+              fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+              fontWeight: 700,
+              fontSize: '1.08rem',
+              letterSpacing: '0.01em',
+            }
+          }}
         />
         <TextField
           select
@@ -76,10 +165,55 @@ export default function JobCreationForm() {
           onChange={(e) => setAssignedTo(e.target.value)}
           fullWidth
           required
-          sx={{ mb: 2 }}
+          sx={{
+            mb: 2,
+            fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+            fontWeight: 700,
+            fontSize: { xs: '1.08rem', sm: '1.12rem' },
+            color: '#174ea6',
+            backgroundColor: '#f6faff',
+            borderRadius: 2,
+            '& .MuiOutlinedInput-root': {
+              fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+              fontWeight: 700,
+              fontSize: { xs: '1.08rem', sm: '1.12rem' },
+              color: '#174ea6',
+              backgroundColor: '#f6faff',
+              borderRadius: 2,
+              '& fieldset': {
+                borderColor: 'limegreen',
+              },
+              '&:hover fieldset': {
+                borderColor: '#2563eb',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#174ea6',
+              },
+            },
+          }}
+          InputLabelProps={{
+            style: {
+              color: '#174ea6',
+              background: '#fff',
+              padding: '0 4px',
+              borderRadius: '4px',
+              fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+              fontWeight: 700,
+              fontSize: '1.08rem',
+              letterSpacing: '0.01em',
+            }
+          }}
         >
           {techs.map((tech) => (
-            <MenuItem key={tech.uid} value={tech.uid}>
+            <MenuItem
+              key={tech.uid}
+              value={tech.uid}
+              sx={{
+                fontWeight: 700,
+                fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+                color: "#174ea6"
+              }}
+            >
               {tech.email}
             </MenuItem>
           ))}

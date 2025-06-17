@@ -56,6 +56,12 @@ export default function TechnicianJobs() {
     setUpdating((prev) => ({ ...prev, [jobId]: false }));
   };
 
+  const formatDate = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp.seconds * 1000);
+    return date.toLocaleString();
+  };
+
   return (
     <Paper sx={{ p: 3, mb: 4 }}>
       <Typography variant="h6" gutterBottom>
@@ -65,42 +71,80 @@ export default function TechnicianJobs() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Status</TableCell>
+              {["Title", "Description", "Status", "Last Updated", "Actions"].map(header => (
+                <TableCell
+                  key={header}
+                  sx={{
+                    fontWeight: 900,
+                    fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+                    color: "#174ea6",
+                    fontSize: "1.08rem",
+                    background: "#eaf6fb"
+                  }}
+                >
+                  {header}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {jobs.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={3}>No jobs assigned.</TableCell>
+            {jobs.map((job) => (
+              <TableRow key={job.id}>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{job.title}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{job.description}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>
+                  <Select
+                    value={job.status}
+                    onChange={(e) => handleStatusChange(job.id, e.target.value)}
+                    size="small"
+                    sx={{
+                      fontWeight: 700,
+                      fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+                      color: "#174ea6",
+                      backgroundColor: "#f6faff",
+                      borderRadius: 2,
+                      '& .MuiOutlinedInput-root': {
+                        fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+                        fontWeight: 700,
+                        fontSize: { xs: '1.08rem', sm: '1.12rem' },
+                        color: "#174ea6",
+                        backgroundColor: "#f6faff",
+                        borderRadius: 2,
+                        '& fieldset': {
+                          borderColor: 'limegreen',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: '#2563eb',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#174ea6',
+                        },
+                      },
+                    }}
+                  >
+                    {["assigned", "in progress", "completed"].map(status => (
+                      <MenuItem
+                        key={status}
+                        value={status}
+                        sx={{
+                          fontWeight: 700,
+                          fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+                          color: "#174ea6"
+                        }}
+                      >
+                        {status}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>
+                  {formatDate(job.lastUpdatedAt)}
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>
+                  {/* Actions here */}
+                </TableCell>
               </TableRow>
-            ) : (
-              jobs.map(job => (
-                <TableRow key={job.id}>
-                  <TableCell>{job.title}</TableCell>
-                  <TableCell>{job.description}</TableCell>
-                  <TableCell>
-                    <Select
-                      value={job.status}
-                      onChange={e => handleStatusChange(job.id, e.target.value)}
-                      size="small"
-                      disabled={updating[job.id]}
-                      sx={{ minWidth: 120 }}
-                    >
-                      {STATUS_OPTIONS.map(opt => (
-                        <MenuItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {updating[job.id] && (
-                      <CircularProgress size={18} sx={{ ml: 1 }} />
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
+            ))}
           </TableBody>
         </Table>
       </TableContainer>

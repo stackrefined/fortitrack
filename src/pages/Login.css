@@ -86,7 +86,6 @@
   border: none;
   border-radius: 6px;
   background: rgba(255,255,255,0.12);
-  color: #fff !important;
   font-size: 1rem;
   outline: none;
 }
@@ -193,4 +192,25 @@
     transform: translateY(0);
     letter-spacing: 0.18em;
   }
+}
+
+.login-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  margin-bottom: 2.5rem;
+  margin-top: 1.2rem;
+}
+
+.login-header-row .login-logo {
+  margin-bottom: 0; /* Remove bottom margin for better alignment */
+}
+
+.login-header-row .stackrefined-banner {
+  margin-bottom: 0;
+  margin-top: 0;
+  font-size: 1.25rem;
+  text-align: left;
+  /* You can adjust font-size or add more style tweaks if needed */
 }
