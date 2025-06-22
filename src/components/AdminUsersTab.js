@@ -28,6 +28,7 @@ export default function AdminUsersTab() {
   const { setSnack } = useNotification();
 
   useEffect(() => {
+    // Listen for changes to the users collection so the admin panel is always up to date
     const unsubscribe = onSnapshot(collection(db, "users"), (querySnapshot) => {
       const usersData = [];
       querySnapshot.forEach((doc) => {
@@ -39,20 +40,22 @@ export default function AdminUsersTab() {
     return () => unsubscribe();
   }, []);
 
+  // Change a user's role (e.g., promote to admin or demote to technician)
   const handleRoleChange = async (userId, newRole) => {
     await updateDoc(doc(db, "users", userId), { role: newRole });
     setSnack({ open: true, message: "Action successful!", severity: "success" });
   };
 
+  // Mark a user as inactive instead of deleting them (soft delete)
   const handleDeactivate = async (userId) => {
     await updateDoc(doc(db, "users", userId), { status: "inactive" });
     setSnack({ open: true, message: "Action successful!", severity: "success" });
   };
 
+  // Add a new user to Firestore (note: this does NOT create a Firebase Auth user)
   const handleAddUser = async (e) => {
     e.preventDefault();
     setAdding(true);
-    // NOTE: This only adds to Firestore, not Firebase Auth!
     await addDoc(collection(db, "users"), {
       email: newUser.email,
       name: newUser.name,
@@ -75,6 +78,7 @@ export default function AdminUsersTab() {
   return (
     <Box>
       <Paper sx={{ p: 2, mb: 2 }}>
+        {/* Quick add form for new users (Firestore only, not Auth) */}
         <form onSubmit={handleAddUser} style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
           <TextField
             label="Email"
@@ -221,6 +225,7 @@ export default function AdminUsersTab() {
                 <TableCell>{user.name || "N/A"}</TableCell>
                 <TableCell>{user.id}</TableCell>
                 <TableCell>
+                  {/* Let admins quickly change a user's role from the table */}
                   <Select
                     value={user.role}
                     onChange={(e) => handleRoleChange(user.id, e.target.value)}
@@ -235,6 +240,7 @@ export default function AdminUsersTab() {
                 </TableCell>
                 <TableCell>{user.status || "active"}</TableCell>
                 <TableCell>
+                  {/* Instead of deleting, just mark the user as inactive */}
                   {user.status !== "inactive" && (
                     <Button
                       variant="outlined"

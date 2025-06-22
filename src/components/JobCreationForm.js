@@ -10,6 +10,7 @@ import { useUser } from "../contexts/UserContext";
 import { useNotification } from "../contexts/NotificationContext";
 
 export default function JobCreationForm() {
+  // Local state for all the job fields and bulk import
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
@@ -23,6 +24,7 @@ export default function JobCreationForm() {
   const { setSnack } = useNotification();
 
   useEffect(() => {
+    // Grab all users with the 'technician' role so we can assign jobs to them
     async function fetchTechs() {
       const usersSnap = await getDocs(collection(db, "users"));
       const techList = [];
@@ -37,16 +39,18 @@ export default function JobCreationForm() {
     fetchTechs();
   }, []);
 
+  // When the dispatcher submits the form, create a new job in Firestore
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Oops! Make sure a tech is assigned before creating the job
     if (!assignedTo) return;
     await addDoc(collection(db, "jobs"), {
       title,
       description,
       assignedTo,
       status: "assigned",
-      createdAt: serverTimestamp(),      // Store UTC timestamp
-      lastUpdatedAt: serverTimestamp(),  // Store UTC timestamp
+      createdAt: serverTimestamp(),      // Always store UTC timestamp
+      lastUpdatedAt: serverTimestamp(),  // Ditto for last update
       createdBy: user?.uid || "unknown",
       confirmedAt: null,
       confirmedBy: null,
@@ -55,6 +59,7 @@ export default function JobCreationForm() {
       estimatedCompletion,
       closingNotes: "",
     });
+    // Reset the form so it's ready for the next job
     setTitle("");
     setDescription("");
     setAssignedTo("");
@@ -64,7 +69,8 @@ export default function JobCreationForm() {
     setSnack({ open: true, message: "Action successful!", severity: "success" });
   };
 
-  // Bulk import handler
+  // Handle bulk job import from pasted JSON.
+  // This is a lifesaver for dispatchers who need to enter a bunch of jobs at once!
   const handleBulkImport = async () => {
     setBulkResult(null);
     let jobs;
@@ -96,6 +102,7 @@ export default function JobCreationForm() {
         success++;
       } catch (err) {
         failed++;
+        // If something goes wrong, let the dispatcher know which row failed
         errors.push(`Row ${i + 1}: ${err.message}`);
       }
     }

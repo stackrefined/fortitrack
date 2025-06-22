@@ -22,7 +22,7 @@ export default function JobsTable() {
   const { user } = useUser();
 
   useEffect(() => {
-    // Fetch all users for UID-to-email mapping
+    // Grab all users so we can show emails instead of just UIDs
     async function fetchUsers() {
       const usersSnap = await getDocs(collection(db, "users"));
       const userMap = {};
@@ -39,7 +39,7 @@ export default function JobsTable() {
     }
     fetchUsers();
 
-    // Listen for jobs
+    // Listen for job updates in real time so the table is always fresh
     const unsub = onSnapshot(collection(db, "jobs"), (snapshot) => {
       const jobsData = [];
       snapshot.forEach((doc) => jobsData.push({ id: doc.id, ...doc.data() }));
@@ -48,14 +48,14 @@ export default function JobsTable() {
     return () => unsub();
   }, []);
 
-  // Helper to format Firestore Timestamp or JS Date
+  // Format Firestore Timestamp or JS Date for display in the user's local timezone
   const formatDate = (date) => {
     if (!date) return "N/A";
     if (date.seconds) return new Date(date.seconds * 1000).toLocaleString();
     return new Date(date).toLocaleString();
   };
 
-  // Handle reassignment
+  // When a dispatcher/admin reassigns a job, update the assigned tech and log the change
   const handleReassign = async (job, newTechUid) => {
     const oldTechUid = job.assignedTo;
     await updateDoc(doc(db, "jobs", job.id), {
@@ -63,6 +63,7 @@ export default function JobsTable() {
       lastUpdatedAt: new Date(),
       lastUpdatedBy: user?.uid || "unknown",
     });
+    // Make a note in the audit log so we know who reassigned the job (and to whom)
     await logJobChange(
       job.id,
       "reassignment",
@@ -72,13 +73,14 @@ export default function JobsTable() {
     );
   };
 
-  // Handle cancellation
+  // If a job needs to be cancelled, update its status and log the action for transparency
   const handleCancel = async (job) => {
     await updateDoc(doc(db, "jobs", job.id), {
       status: "cancelled",
       lastUpdatedAt: new Date(),
       lastUpdatedBy: user?.uid || "unknown",
     });
+    // Log the cancellation so we have a record of who did it and when
     await logJobChange(
       job.id,
       "cancellation",

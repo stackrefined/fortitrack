@@ -31,13 +31,14 @@ const STATUS_OPTIONS = [
 export default function TechnicianJobs() {
   const { user } = useUser();
   const [jobs, setJobs] = useState([]);
-  const [updating, setUpdating] = useState({}); // Track updating state per job
+  const [updating, setUpdating] = useState({}); // Track which jobs are currently being updated (for button spinners)
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
-  const [fieldEdits, setFieldEdits] = useState({}); // Track edits for each job
-  const [gpsWatchers, setGpsWatchers] = useState({}); // Track GPS watcher IDs per job
+  const [fieldEdits, setFieldEdits] = useState({}); // Store unsaved edits for each job
+  const [gpsWatchers, setGpsWatchers] = useState({}); // Keep track of which jobs we're watching GPS for
 
   useEffect(() => {
     if (!user) return;
+    // Listen for jobs assigned to this tech, and update in real-time
     const q = query(
       collection(db, 'jobs'),
       where('assignedTo', '==', user.uid)
@@ -59,7 +60,7 @@ export default function TechnicianJobs() {
         lastUpdatedAt: new Date(),
         lastUpdatedBy: user?.uid || "unknown",
       });
-      // Log the change
+      // Log the change so we always know who did what
       await logJobChange(
         jobId,
         "status",
@@ -91,7 +92,7 @@ export default function TechnicianJobs() {
     setUpdating((prev) => ({ ...prev, [jobId]: false }));
   };
 
-  // Handle field edits (startLocation, materialsNeeded, estimatedCompletion, closingNotes)
+  // When a tech edits a field (like start location or materials), stash the change locally until they hit "Save"
   const handleFieldEdit = (jobId, field, value) => {
     setFieldEdits((prev) => ({
       ...prev,
@@ -99,6 +100,7 @@ export default function TechnicianJobs() {
     }));
   };
 
+  // Save all field edits for a job, and log each change for the audit trail
   const handleSaveFields = async (job) => {
     const edits = fieldEdits[job.id] || {};
     setUpdating((prev) => ({ ...prev, [job.id]: true }));
@@ -108,7 +110,8 @@ export default function TechnicianJobs() {
         lastUpdatedAt: new Date(),
         lastUpdatedBy: user?.uid || "unknown",
       });
-      // Log each field change
+      // For every field the tech updated, make a note in the audit log.
+      // This way, we always know who changed what (and when).
       for (const field of Object.keys(edits)) {
         await logJobChange(
           job.id,
@@ -126,22 +129,25 @@ export default function TechnicianJobs() {
     setUpdating((prev) => ({ ...prev, [job.id]: false }));
   };
 
+  // Format Firestore timestamps for display in the user's local timezone
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp.seconds * 1000);
     return date.toLocaleString();
   };
 
-  // Helper: Should we track GPS for this job?
+  // Should we be tracking GPS for this job? Only if the tech is on the way or working.
   const shouldTrackGps = (status) =>
     ["enroute", "arrived", "job_started"].includes(status);
 
-  // Start GPS tracking for a job
+  // Start watching the technician's location for this job.
+  // We'll keep sending updates to Firestore until the job is finished.
   const startGpsTracking = (job) => {
     if (!navigator.geolocation || gpsWatchers[job.id]) return;
     const watcherId = navigator.geolocation.watchPosition(
       async (pos) => {
-        console.log("GPS position received", pos); // <--- Add this line
+        // Got a new GPS position—let's save it to Firestore
+        console.log("GPS position received", pos);
         try {
           await addDoc(
             fbCollection(db, "jobs", job.id, "locations"),
@@ -154,18 +160,20 @@ export default function TechnicianJobs() {
             }
           );
         } catch (err) {
-          console.error("Failed to write GPS location:", err); // <--- Add this line
+          // If we can't write to Firestore, log it for debugging
+          console.error("Failed to write GPS location:", err);
         }
       },
       (err) => {
-        console.error("GPS error:", err); // <--- Add this line
+        // If the browser can't get a GPS fix, let us know in the console
+        console.error("GPS error:", err);
       },
       { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
     );
     setGpsWatchers((prev) => ({ ...prev, [job.id]: watcherId }));
   };
 
-  // Stop GPS tracking for a job
+  // Done with this job? Let's stop tracking the tech's location to save battery.
   const stopGpsTracking = (jobId) => {
     if (gpsWatchers[jobId]) {
       navigator.geolocation.clearWatch(gpsWatchers[jobId]);
@@ -177,7 +185,8 @@ export default function TechnicianJobs() {
     }
   };
 
-  // Effect: Start/stop GPS tracking based on job status
+  // Whenever the job list changes, let's check if we should start or stop GPS tracking.
+  // Only track if the tech is actually on the way or working.
   useEffect(() => {
     jobs.forEach((job) => {
       if (shouldTrackGps(job.status)) {
@@ -186,7 +195,7 @@ export default function TechnicianJobs() {
         stopGpsTracking(job.id);
       }
     });
-    // Cleanup on unmount: stop all watchers
+    // If the component unmounts, stop all GPS watchers so we don't leak memory or battery
     return () => {
       Object.values(gpsWatchers).forEach((watcherId) =>
         navigator.geolocation.clearWatch(watcherId)
