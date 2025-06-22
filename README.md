@@ -22,10 +22,17 @@ FortiTrack is a field service and job management platform designed for dispatche
   Admins/dispatchers can view jobs needing attention (pending confirmation, overdue, or stuck).
 
 - **Bulk Data Entry:**  
-  (Planned) Import jobs in bulk via JSON or Excel.
+  Import jobs in bulk via JSON.
 
 - **Error Logging:**  
-  (Planned) Client-side errors are logged for diagnostics.
+  Client-side errors are logged for diagnostics.
+
+---
+
+## Live Demo
+
+**Firebase Hosting:**  
+[https://hvac-dispatch-e3e2a.web.app](https://hvac-dispatch-e3e2a.web.app)
 
 ---
 
