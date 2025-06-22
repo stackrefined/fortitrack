@@ -93,9 +93,12 @@
 }
 
 /* Modern table row hover */
+.MuiTableRow-root {
+  transition: background 0.18s, box-shadow 0.18s;
+}
 .MuiTableRow-root:hover {
-  background: #f6faff !important;
-  transition: background 0.18s;
+  background: #eaf6fb !important;
+  box-shadow: 0 2px 12px #2563eb11;
 }
 
 /* Remove heavy borders from tables */
@@ -135,6 +138,21 @@
   margin-bottom: 2rem;
 }
 
+/* Animate cards on mount */
+.dashboard-card, .MuiPaper-root {
+  transition: box-shadow 0.25s, transform 0.18s;
+}
+.dashboard-card:hover, .MuiPaper-root:hover {
+  box-shadow: 0 12px 36px 0 rgba(23,78,166,0.13) !important;
+  transform: translateY(-2px) scale(1.01);
+}
+
+/* Button click animation */
+.MuiButton-root:active {
+  transform: scale(0.97);
+  transition: transform 0.08s;
+}
+
 /* Typography tweaks */
 .MuiTypography-root, .MuiTableCell-root, .MuiButton-root, .MuiInputBase-input, .MuiSelect-select, .MuiMenuItem-root {
   font-family: 'Montserrat', 'Inter', 'Poppins', Arial, sans-serif !important;
@@ -147,4 +165,12 @@
     padding: 1rem !important;
     border-radius: 16px !important;
   }
+}
+
+.dashboard-header {
+  animation: fadeInDown 0.7s cubic-bezier(.4,0,.2,1);
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-32px);}
+  to   { opacity: 1; transform: translateY(0);}
 }
