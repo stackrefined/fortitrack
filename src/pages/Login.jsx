@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Paper, Typography, TextField, Button, Alert, IconButton, InputAdornment, CircularProgress } from '@mui/material';
+import { TextField, Button, Alert, IconButton, InputAdornment } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
 import './Login.css';
 
 const terminalText = `FortiTrack is a real-time dispatch and job tracking platform for HVAC teams.
@@ -13,37 +13,21 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [logoHidden, setLogoHidden] = useState(false);
   const [typed, setTyped] = useState('');
   const [showCursor, setShowCursor] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [formFocused, setFormFocused] = useState(false);
+  const [terminalHeight, setTerminalHeight] = useState(0);
   const navigate = useNavigate();
   const terminalRef = useRef(null);
 
-  // Calculate the max height for the terminal text (prevents layout shift)
-  const [terminalHeight, setTerminalHeight] = useState(0);
-
+  // Measure terminal text height for smooth collapse
   useEffect(() => {
-    // Create a hidden element to measure the full text height
-    const el = document.createElement('span');
-    el.style.visibility = 'hidden';
-    el.style.position = 'absolute';
-    el.style.whiteSpace = 'pre-wrap';
-    el.style.fontFamily = "'Fira Mono', 'Consolas', 'Menlo', monospace";
-    el.style.fontWeight = '700';
-    el.style.fontSize = '1.08em';
-    el.style.padding = '0.5em 1em';
-    el.style.borderRadius = '8px';
-    el.style.background = 'rgba(23, 78, 166, 0.10)';
-    el.style.boxShadow = '0 2px 12px rgba(23, 78, 166, 0.08)';
-    el.style.width = terminalRef.current ? `${terminalRef.current.offsetWidth}px` : 'auto';
-    el.innerText = terminalText;
-    document.body.appendChild(el);
-    setTerminalHeight(el.offsetHeight);
-    document.body.removeChild(el);
+    if (!terminalRef.current) return;
+    setTerminalHeight(terminalRef.current.offsetHeight);
   }, []);
 
+  // Typing animation
   useEffect(() => {
     let i = 0;
     setTyped('');
@@ -62,56 +46,54 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true); // Start loading
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/dashboard');
     } catch (err) {
       setError('Login failed. Please check your credentials.');
     }
-    setLoading(false); // End loading
-  };
-
-  const handleFormFocus = () => setLogoHidden(true);
-  const handleFormBlur = (e) => {
-    if (!e.currentTarget.contains(e.relatedTarget)) {
-      setLogoHidden(false);
-    }
   };
 
   return (
     <div className="login-background">
-      <div className="login-header-row">
+      <div
+        className={`login-header-row${formFocused ? ' header-drop' : ''}`}
+        style={{
+          transition: 'transform 0.5s cubic-bezier(.4,0,.2,1)',
+          transform: formFocused ? `translateY(${terminalHeight}px)` : 'translateY(0)',
+        }}
+      >
         <img
           src="/logo.png"
           alt="FortiTrack Logo"
-          className={`login-logo${logoHidden ? ' logo-hide' : ''}`}
+          className="login-logo"
         />
         <div className="stackrefined-banner">
           A <span className="brand">Stackrefined</span> Solution
         </div>
       </div>
-      <div className="product-info">
-        <h1 className="fortitrack-title">FortiTrack</h1>
-        <div
-          className="typed-terminal"
-          ref={terminalRef}
-          style={{
-            minHeight: terminalHeight ? `${terminalHeight}px` : '4.5em',
-            display: 'block',
-            transition: 'min-height 0.2s',
-          }}
-        >
+      <div
+        ref={terminalRef}
+        className={`terminal-type-container${formFocused ? ' collapsed' : ''}`}
+        style={{
+          minHeight: formFocused ? 0 : terminalHeight,
+          opacity: formFocused ? 0 : 1,
+          transition: 'min-height 0.5s cubic-bezier(.4,0,.2,1), opacity 0.4s cubic-bezier(.4,0,.2,1)'
+        }}
+      >
+        <span className="typed-terminal">
           {typed}
           <span className="terminal-cursor">{showCursor ? "█" : ""}</span>
-        </div>
+        </span>
       </div>
       <form
         onSubmit={handleLogin}
-        onFocus={handleFormFocus}
-        onBlur={handleFormBlur}
+        onFocus={() => setFormFocused(true)}
+        onBlur={e => {
+          if (!e.currentTarget.contains(e.relatedTarget)) setFormFocused(false);
+        }}
         tabIndex={-1}
-        style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}
+        className="login-form"
       >
         <h2 className="login-form-title">Sign In</h2>
         {error && (
@@ -263,23 +245,8 @@ export default function Login() {
             position: "relative",
             overflow: "hidden",
           }}
-          disabled={loading}
         >
-          {loading ? (
-            <CircularProgress
-              size={26}
-              sx={{
-                color: "#fff",
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                marginTop: "-13px",
-                marginLeft: "-13px",
-              }}
-            />
-          ) : (
-            "Sign In"
-          )}
+          Sign In
         </Button>
       </form>
     </div>

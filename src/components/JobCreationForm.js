@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -13,12 +13,16 @@ export default function JobCreationForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
+  const [startLocation, setStartLocation] = useState("");
+  const [materialsNeeded, setMaterialsNeeded] = useState("");
+  const [estimatedCompletion, setEstimatedCompletion] = useState("");
   const [techs, setTechs] = useState([]);
-  const { user } = useUser(); // Add this line
+  const [bulkJson, setBulkJson] = useState("");
+  const [bulkResult, setBulkResult] = useState(null);
+  const { user } = useUser();
   const { setSnack } = useNotification();
 
   useEffect(() => {
-    // Fetch all users with role 'technician'
     async function fetchTechs() {
       const usersSnap = await getDocs(collection(db, "users"));
       const techList = [];
@@ -39,15 +43,64 @@ export default function JobCreationForm() {
     await addDoc(collection(db, "jobs"), {
       title,
       description,
-      assignedTo, // This is the UID
+      assignedTo,
       status: "assigned",
-      createdAt: new Date(),
-      createdBy: user?.uid || "unknown", // Add this line
+      createdAt: serverTimestamp(),      // Store UTC timestamp
+      lastUpdatedAt: serverTimestamp(),  // Store UTC timestamp
+      createdBy: user?.uid || "unknown",
+      confirmedAt: null,
+      confirmedBy: null,
+      startLocation,
+      materialsNeeded,
+      estimatedCompletion,
+      closingNotes: "",
     });
     setTitle("");
     setDescription("");
     setAssignedTo("");
+    setStartLocation("");
+    setMaterialsNeeded("");
+    setEstimatedCompletion("");
     setSnack({ open: true, message: "Action successful!", severity: "success" });
+  };
+
+  // Bulk import handler
+  const handleBulkImport = async () => {
+    setBulkResult(null);
+    let jobs;
+    try {
+      jobs = JSON.parse(bulkJson);
+      if (!Array.isArray(jobs)) throw new Error("Input must be a JSON array.");
+    } catch (err) {
+      setBulkResult({ success: 0, failed: 0, errors: [`Invalid JSON: ${err.message}`] });
+      return;
+    }
+    let success = 0, failed = 0, errors = [];
+    for (const [i, job] of jobs.entries()) {
+      try {
+        await addDoc(collection(db, "jobs"), {
+          title: job.title || "",
+          description: job.description || "",
+          assignedTo: job.assignedTo || "",
+          status: job.status || "assigned",
+          createdAt: serverTimestamp(),
+          lastUpdatedAt: serverTimestamp(),
+          createdBy: user?.uid || "unknown",
+          confirmedAt: null,
+          confirmedBy: null,
+          startLocation: job.startLocation || "",
+          materialsNeeded: job.materialsNeeded || "",
+          estimatedCompletion: job.estimatedCompletion || "",
+          closingNotes: job.closingNotes || "",
+        });
+        success++;
+      } catch (err) {
+        failed++;
+        errors.push(`Row ${i + 1}: ${err.message}`);
+      }
+    }
+    setBulkResult({ success, failed, errors });
+    setBulkJson("");
   };
 
   return (
@@ -218,10 +271,79 @@ export default function JobCreationForm() {
             </MenuItem>
           ))}
         </TextField>
+        <TextField
+          label="Start Location"
+          value={startLocation}
+          onChange={(e) => setStartLocation(e.target.value)}
+          fullWidth
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          label="Materials Needed"
+          value={materialsNeeded}
+          onChange={(e) => setMaterialsNeeded(e.target.value)}
+          fullWidth
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          label="Estimated Completion (e.g. 2 hours, 2025-06-22 14:00)"
+          value={estimatedCompletion}
+          onChange={(e) => setEstimatedCompletion(e.target.value)}
+          fullWidth
+          sx={{ mb: 2 }}
+        />
         <Button type="submit" variant="contained" color="primary">
           Create Job
         </Button>
       </form>
+      <Typography variant="subtitle1" sx={{ mt: 4, mb: 1, fontWeight: 700 }}>
+        Bulk Import Jobs (Paste JSON Array)
+      </Typography>
+      <TextField
+        label="Paste JSON Array Here"
+        value={bulkJson}
+        onChange={e => setBulkJson(e.target.value)}
+        multiline
+        minRows={4}
+        fullWidth
+        sx={{ mb: 2 }}
+        placeholder={`[
+  {
+    "title": "Job 1",
+    "description": "Fix AC",
+    "assignedTo": "TECH_UID",
+    "startLocation": "Warehouse",
+    "materialsNeeded": "Filter",
+    "estimatedCompletion": "2025-07-01 14:00"
+  },
+  ...
+]`}
+      />
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={handleBulkImport}
+        sx={{ mb: 2 }}
+      >
+        Import Jobs from JSON
+      </Button>
+      {bulkResult && (
+        <Paper sx={{ p: 2, mt: 1, background: "#f6faff" }}>
+          <Typography variant="body2" color="success.main">
+            Success: {bulkResult.success}
+          </Typography>
+          <Typography variant="body2" color="error.main">
+            Failed: {bulkResult.failed}
+          </Typography>
+          {bulkResult.errors && bulkResult.errors.length > 0 && (
+            <ul>
+              {bulkResult.errors.map((err, idx) => (
+                <li key={idx} style={{ color: "#b91c1c" }}>{err}</li>
+              ))}
+            </ul>
+          )}
+        </Paper>
+      )}
     </Paper>
   );
 }

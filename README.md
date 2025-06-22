@@ -1,131 +1,83 @@
-# FortiTrack – HVAC Dispatch Platform
+# FortiTrack
 
-FortiTrack is a modern, real-time dispatch and job tracking platform for HVAC teams. Built with React and Firebase, it enables seamless job assignment, technician tracking, and workflow management with a polished, enterprise-grade user experience.
-
----
-
-## Key Features
-
-- **Secure Authentication & Role-Based Access**  
-  Firebase Auth with admin, dispatcher, and technician roles.
-- **Real-Time Job Management**  
-  Live job creation, assignment, and status updates via Firestore listeners.
-- **User Management Dashboard**  
-  Admins can add, edit, and deactivate users from a sleek UI.
-- **Technician Workflow**  
-  Technicians see only their jobs and can update status in real time.
-- **Modern, Branded UI**  
-  - Unique, airy blue gradients and glassmorphism-inspired cards
-  - Consistent, clear text with bold, modern fonts for readability and a professional look
-  - Pill-shaped buttons, animated transitions, and micro-interactions
-  - Responsive layouts for mobile and desktop
-- **Audit Trail**  
-  Tracks who created/updated jobs and when.
-- **Continuous Deployment**  
-  Automatic deploys via GitHub Actions to Firebase Hosting.
+FortiTrack is a field service and job management platform designed for dispatchers, technicians, and admins. It leverages React and Firebase to provide real-time job assignment, workflow tracking, GPS logging, diagnostics, and robust audit trails.
 
 ---
 
-## Technology Stack
+## Features
 
-- **React.js** – Frontend framework
-- **Firebase** – Authentication & Firestore database
-- **Material UI** – Modern UI components
-- **React Router** – Routing and dashboard protection
-- **GitHub Actions** – CI/CD for automatic deploys
+- **Job Assignment & Confirmation:**  
+  Dispatchers assign jobs to technicians, who must confirm receipt before starting.
 
----
+- **Job Workflow:**  
+  Supports granular statuses (Assigned, Enroute, Arrived, Job Started, Job Completed, Cancelled) and workflow fields (start location, materials needed, estimated completion, closing notes).
 
-## Business Value
+- **Change & Audit Logging:**  
+  Every significant job action (status change, reassignment, field update) is logged in subcollections for full traceability.
 
-- **Boosts Field Efficiency:** Real-time collaboration between dispatchers and technicians
-- **Cloud-Native Reliability:** Secure, scalable, and always up-to-date
-- **Enterprise-Ready UI:** Professional, branded, and delightful to use
-- **Modular & Extensible:** Easily add features like GPS, analytics, or notifications
+- **Real-Time GPS Tracking:**  
+  Technician locations are tracked and stored in real time while jobs are in progress.
 
----
+- **Diagnostics Dashboard:**  
+  Admins/dispatchers can view jobs needing attention (pending confirmation, overdue, or stuck).
 
-## Live Demo
+- **Bulk Data Entry:**  
+  (Planned) Import jobs in bulk via JSON or Excel.
 
-[https://hvac-dispatch-e3e2a.web.app](https://hvac-dispatch-e3e2a.web.app)
-
----
-
-## Quick Start
-
-```sh
-git clone https://github.com/stackrefined/fortitrack.git
-cd fortitrack
-npm install
-npm start
-```
-Visit [http://localhost:3000](http://localhost:3000) in your browser.
+- **Error Logging:**  
+  (Planned) Client-side errors are logged for diagnostics.
 
 ---
 
-## Authentication
+## Date/Time Handling
 
-Only authenticated users can access the dashboard.
+- **Storage:**  
+  All timestamps are stored in UTC using Firestore's `serverTimestamp()` or Firestore Timestamp fields.
 
-**Demo credentials:**  
-- **Admin:**  
-  - Username: `admin@fortitrack.com`  
-  - Password: `password`
-- **Technician:**  
-  - Username: `mike.tech@fortitrack.com`  
-  - Password: `password`
-- **Dispatcher:**  
-  - Username: `jane.dispatch@fortitrack.com`  
-  - Password: `password`
+- **Display:**  
+  All dates/times are displayed in the user's local timezone using JavaScript's `.toLocaleString()` method.
+
+- **Advanced Formatting:**  
+  For more advanced formatting, you can use the `date-fns` library.
 
 ---
 
-## Project Structure
+## Data Model
 
-```
-/public
-  ├── index.html
-  └── logo.png
+- **jobs** (collection): Main job documents.
+  - **changes** (subcollection): Audit/history of job changes.
+  - **audit** (subcollection): Full audit trail of all actions.
+  - **locations** (subcollection): GPS updates for the job.
 
-/src
-  ├── components/
-  │   ├── JobCreationForm.js
-  │   ├── JobsTable.js
-  │   ├── TechnicianJobs.js
-  │   ├── AdminUsersTab.js
-  ├── pages/
-  │   └── Dashboard.jsx
-  │   └── Login.jsx
-  ├── firebase.js
-  ├── App.js
-  ├── index.js
-  └── styles/
-      └── custom.css
-```
+- **users** (collection): User profiles and roles.
 
 ---
 
-## UI & UX Highlights
+## Security
 
-- **Unique, Modern Look:**  
-  Soft blue gradients, glassy cards, and subtle shadows for a refreshing feel.
-- **Consistent, Clear Text:**  
-  All dashboard text uses bold, modern fonts for better readability and a professional look.
-- **Responsive & Accessible:**  
-  Mobile-first layouts, large touch targets, and accessible color choices.
-- **Micro-Interactions:**  
-  Animated button feedback, smooth tab transitions, and hover effects.
-- **No Layout Shift:**  
-  Animated terminal text on login page reserves space, keeping forms stable.
+- All sensitive actions are protected by Firestore security rules.
+- Only authenticated users can read/write jobs, changes, audits, and locations.
+- Role-based access for admins, dispatchers, and technicians.
 
 ---
 
-## Roadmap
+## Getting Started
 
-- GPS/location tracking for technicians
-- Push notifications for job updates
-- Enhanced admin analytics dashboard
-- Offline support for field teams
+1. Clone the repo and install dependencies:
+   ```bash
+   npm install
+   ```
+2. Set up your Firebase project and update `src/firebase.js` with your config.
+3. Run the app:
+   ```bash
+   npm start
+   ```
+
+---
+
+## Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
 ---
 

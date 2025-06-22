@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, getDocs } from "firebase/firestore";
+import { collection, onSnapshot, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
@@ -9,21 +9,33 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import Button from "@mui/material/Button";
+import { logJobChange } from "../utils/jobChangeLogger";
+import { useUser } from "../contexts/UserContext";
 
 export default function JobsTable() {
   const [jobs, setJobs] = useState([]);
   const [users, setUsers] = useState({});
+  const [techs, setTechs] = useState([]);
+  const { user } = useUser();
 
   useEffect(() => {
     // Fetch all users for UID-to-email mapping
     async function fetchUsers() {
       const usersSnap = await getDocs(collection(db, "users"));
       const userMap = {};
+      const techList = [];
       usersSnap.forEach((doc) => {
         const data = doc.data();
         userMap[doc.id] = data.email || doc.id;
+        if (data.role === "technician") {
+          techList.push({ uid: doc.id, email: data.email });
+        }
       });
       setUsers(userMap);
+      setTechs(techList);
     }
     fetchUsers();
 
@@ -43,6 +55,39 @@ export default function JobsTable() {
     return new Date(date).toLocaleString();
   };
 
+  // Handle reassignment
+  const handleReassign = async (job, newTechUid) => {
+    const oldTechUid = job.assignedTo;
+    await updateDoc(doc(db, "jobs", job.id), {
+      assignedTo: newTechUid,
+      lastUpdatedAt: new Date(),
+      lastUpdatedBy: user?.uid || "unknown",
+    });
+    await logJobChange(
+      job.id,
+      "reassignment",
+      oldTechUid,
+      newTechUid,
+      user?.uid || "unknown"
+    );
+  };
+
+  // Handle cancellation
+  const handleCancel = async (job) => {
+    await updateDoc(doc(db, "jobs", job.id), {
+      status: "cancelled",
+      lastUpdatedAt: new Date(),
+      lastUpdatedBy: user?.uid || "unknown",
+    });
+    await logJobChange(
+      job.id,
+      "cancellation",
+      job.status,
+      "cancelled",
+      user?.uid || "unknown"
+    );
+  };
+
   return (
     <Paper sx={{ p: 3, mb: 4 }}>
       <Typography variant="h6" gutterBottom sx={{
@@ -56,7 +101,7 @@ export default function JobsTable() {
         <Table>
           <TableHead>
             <TableRow>
-              {["Title", "Description", "Assigned To", "Status", "Created By", "Created At", "Last Updated By", "Last Updated At"].map(header => (
+              {["Title", "Description", "Assigned To", "Status", "Created By", "Created At", "Last Updated By", "Last Updated At", "Actions"].map(header => (
                 <TableCell
                   key={header}
                   sx={{
@@ -77,12 +122,43 @@ export default function JobsTable() {
               <TableRow key={job.id}>
                 <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{job.title}</TableCell>
                 <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{job.description}</TableCell>
-                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{users[job.assignedTo] || job.assignedTo}</TableCell>
+                <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>
+                  <Select
+                    value={job.assignedTo}
+                    onChange={e => handleReassign(job, e.target.value)}
+                    size="small"
+                    sx={{
+                      fontWeight: 700,
+                      fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
+                      color: "#174ea6",
+                      backgroundColor: "#f6faff",
+                      borderRadius: 2,
+                    }}
+                  >
+                    {techs.map(tech => (
+                      <MenuItem key={tech.uid} value={tech.uid}>
+                        {tech.email}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </TableCell>
                 <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{job.status}</TableCell>
                 <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{users[job.createdBy] || job.createdBy || "N/A"}</TableCell>
                 <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{formatDate(job.createdAt)}</TableCell>
                 <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{users[job.lastUpdatedBy] || job.lastUpdatedBy || "N/A"}</TableCell>
                 <TableCell sx={{ fontWeight: 700, fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif" }}>{formatDate(job.lastUpdatedAt)}</TableCell>
+                <TableCell>
+                  {job.status !== "cancelled" && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => handleCancel(job)}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

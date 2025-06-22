@@ -139,61 +139,6 @@
   }
 }
 
-.typed-terminal {
-  display: inline-block;
-  white-space: pre-wrap;
-  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
-  font-weight: 700;
-  font-size: 1.08em;
-  background: rgba(23, 78, 166, 0.10);
-  padding: 0.5em 1em;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(23, 78, 166, 0.08);
-  color: #fff;
-}
-
-.stackrefined-banner {
-  font-family: 'Inter', 'Montserrat', 'Poppins', Arial, sans-serif;
-  font-weight: 800;
-  font-size: 1.25rem;
-  color: #fff;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  text-align: center;
-  margin-bottom: 2.5rem;
-  margin-top: 1.2rem;
-  text-shadow:
-    0 2px 12px rgba(23, 78, 166, 0.18),
-    0 0 8px #2563eb44,
-    0 1px 0 #fff4;
-  opacity: 0;
-  transform: translateY(-32px);
-  animation: stackrefinedFadeIn 1.2s cubic-bezier(0.4,0,0.2,1) 0.2s forwards;
-  letter-spacing: 0.18em;
-}
-
-.stackrefined-banner .brand {
-  color: #60a5fa; /* Accent blue for brand */
-  font-weight: 900;
-  letter-spacing: 0.22em;
-  text-shadow:
-    0 2px 16px #60a5fa55,
-    0 0 8px #fff8;
-}
-
-@keyframes stackrefinedFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-32px);
-    letter-spacing: 0.5em;
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    letter-spacing: 0.18em;
-  }
-}
-
 .login-header-row {
   display: flex;
   align-items: center;
@@ -201,16 +146,158 @@
   gap: 2.5rem;
   margin-bottom: 2.5rem;
   margin-top: 1.2rem;
+  transition: transform 0.5s cubic-bezier(.4,0,.2,1);
+  z-index: 2;
+  position: relative;
 }
 
-.login-header-row .login-logo {
-  margin-bottom: 0; /* Remove bottom margin for better alignment */
+.header-drop {
+  /* This class is toggled when formFocused is true */
 }
 
-.login-header-row .stackrefined-banner {
-  margin-bottom: 0;
-  margin-top: 0;
-  font-size: 1.25rem;
-  text-align: left;
-  /* You can adjust font-size or add more style tweaks if needed */
+.terminal-type-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  min-height: 4.5em;
+  transition: min-height 0.5s cubic-bezier(.4,0,.2,1), opacity 0.4s cubic-bezier(.4,0,.2,1);
+  opacity: 1;
+  /* Remove border or box-shadow if you don't want it */
+  border: none;
+  box-shadow: none;
+}
+
+.terminal-type-container.collapsed {
+  min-height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.typed-terminal {
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  font-weight: 700;
+  font-size: 1.08em;
+  padding: 0.5em 1em;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  box-shadow: 0 2px 12px rgba(23, 78, 166, 0.08); /* Optional: remove if you want no shadow */
+  border: none; /* Ensure no border */
+  display: block;
+}
+
+.terminal-cursor {
+  color: #2563eb;
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Large logo transition */
+.fortitrack-logo-large {
+  display: block;
+  margin: 0 auto;
+  width: 80px;
+  height: 80px;
+  opacity: 0;
+  transform: translateY(40px) scale(0.85);
+  transition: opacity 0.4s, transform 0.5s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, 40px) scale(0.85);
+}
+
+.fortitrack-logo-large.logo-large-visible {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  pointer-events: auto;
+}
+
+/* Small logo in header row */
+.fortitrack-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px #2563eb22;
+  background: #fff;
+  padding: 6px;
+  opacity: 1;
+  transition: opacity 0.4s;
+}
+
+/* Login hero section */
+.login-hero {
+  position: relative;
+  min-height: 110px;
+  margin-bottom: 1.5rem;
+}
+
+/* Login form transitions */
+.login-form {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  transition: margin-top 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+.login-form.form-focused {
+  margin-top: -2.5rem;
+}
+
+.login-form-title {
+  font-family: 'Montserrat', 'Inter', 'Poppins', Arial, sans-serif;
+  font-weight: 900;
+  color: #174ea6;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  .login-header-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .login-form {
+    max-width: 98vw;
+  }
+  .fortitrack-logo-large {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+.login-center-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.login-center-container .terminal-type-container {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.login-center-container .login-form {
+  width: 100%;
+  transition: margin-top 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+.login-center-container .login-form.form-focused {
+  margin-top: -2.5rem;
 }

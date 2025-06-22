@@ -17,6 +17,7 @@ import JobCreationForm from "../components/JobCreationForm";
 import JobsTable from "../components/JobsTable";
 import TechnicianJobs from "../components/TechnicianJobs";
 import AdminUsersTab from "../components/AdminUsersTab";
+import DiagnosticsDashboard from "../components/DiagnosticsDashboard";
 import "../App.css";
 
 export default function Dashboard() {
@@ -59,6 +60,10 @@ export default function Dashboard() {
         </>
       ),
     });
+    tabs.push({
+      label: "Diagnostics",
+      component: <DiagnosticsDashboard />,
+    });
   }
   if (role === "dispatcher") {
     tabs.push({
@@ -69,6 +74,10 @@ export default function Dashboard() {
           <JobsTable />
         </>
       ),
+    });
+    tabs.push({
+      label: "Diagnostics",
+      component: <DiagnosticsDashboard />,
     });
   }
   if (role === "technician") {
