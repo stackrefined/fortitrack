@@ -289,11 +289,11 @@
   background: #fff;
 }
 
-/* Enhance the "A stackrefined solution" banner */
+/* Enhanced Stackrefined banner for more visual impact */
 .stackrefined-banner {
   font-family: 'Inter', 'Montserrat', 'Poppins', Arial, sans-serif;
   font-weight: 800;
-  font-size: 1.15rem;
+  font-size: 1.18rem;
   color: #fff;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -305,19 +305,36 @@
     0 0 8px #2563eb44,
     0 1px 0 #fff4;
   opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
 }
 
+/* Make "Stackrefined" stand out as a badge with a bold border and soft background */
 .stackrefined-banner .brand {
-  color: #174ea6; /* Deep blue for contrast */
+  color: #174ea6;
   font-weight: 900;
   letter-spacing: 0.22em;
-  /* Add a black border (stroke) for extra pop */
-  -webkit-text-stroke: 1.2px #111;
+  background: rgba(255,255,255,0.85);
+  padding: 2px 12px;
+  border-radius: 10px;
+  border: 2px solid #174ea6;
+  -webkit-text-stroke: 1.2px #111; /* Crisp black outline for clarity */
   text-stroke: 1.2px #111;
-  /* Optional: subtle glow for even more separation */
+  box-shadow: 0 2px 12px #2563eb22;
   text-shadow:
     0 2px 16px #174ea655,
     0 0 8px #fff8;
+  transition: background 0.2s, box-shadow 0.2s;
+  display: inline-block;
+}
+
+/* Give the badge a little pop when hovered */
+.stackrefined-banner .brand:hover {
+  background: #eaf6fb;
+  box-shadow: 0 4px 18px #2563eb33;
+  cursor: pointer;
 }
 
 /* Responsive tweaks */
