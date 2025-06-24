@@ -22,6 +22,13 @@ import DiagnosticsDashboard from "../components/DiagnosticsDashboard";
 import { motion, AnimatePresence } from "framer-motion";
 import "../App.css";
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function Dashboard() {
   const { role, loading: userLoading, user } = useUser();
   const [tab, setTab] = useState(0);
@@ -198,7 +205,7 @@ export default function Dashboard() {
                 variant="h6"
                 sx={{ color: "#2563eb", fontWeight: 700, ml: 2 }}
               >
-                {`Welcome, ${user.email.split("@")[0]}!`}
+                {user?.email ? `${getGreeting()}, ${user.email.split("@")[0]}!` : ""}
               </Typography>
             )}
           </Box>
@@ -293,29 +300,47 @@ export default function Dashboard() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={tab}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 32 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -24 }}
-                transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               >
                 {tabs[tab]?.component}
               </motion.div>
             </AnimatePresence>
           </Box>
         </Box>
-        {/* Footer with a little branding */}
+        {/* Footer branding: subtle, but visually distinct, to reinforce product identity */}
         <Box
           sx={{
             color: "#2563eb",
-            opacity: 0.7,
+            opacity: 0.85,
             fontWeight: 700,
-            fontSize: "1.1rem",
-            mt: 2,
+            fontSize: "1.15rem",
+            mt: 4,
+            mb: 2,
+            textAlign: "center",
+            letterSpacing: "0.08em",
+            userSelect: "none",
+            textShadow: "0 2px 12px #eaf6fb, 0 0 8px #2563eb22",
           }}
         >
           A{" "}
           <span
-            style={{ color: "#60a5fa", fontWeight: 900 }}
+            style={{
+              color: "#174ea6",
+              fontWeight: 900,
+              letterSpacing: "0.18em",
+              padding: "2px 8px",
+              borderRadius: "8px",
+              background: "rgba(255,255,255,0.7)",
+              boxShadow: "0 2px 8px #2563eb22",
+              border: "1.5px solid #174ea6",
+              WebkitTextStroke: "1px #111", // Crisp black outline for clarity
+              textStroke: "1px #111",
+              textShadow: "0 2px 16px #174ea655, 0 0 8px #fff8",
+              display: "inline-block",
+              transition: "background 0.2s, box-shadow 0.2s",
+            }}
           >
             Stackrefined
           </span>{" "}
