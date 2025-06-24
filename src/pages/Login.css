@@ -289,6 +289,37 @@
   background: #fff;
 }
 
+/* Enhance the "A stackrefined solution" banner */
+.stackrefined-banner {
+  font-family: 'Inter', 'Montserrat', 'Poppins', Arial, sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: #fff;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 2.5rem;
+  margin-top: 1.2rem;
+  text-shadow:
+    0 2px 12px rgba(23, 78, 166, 0.18),
+    0 0 8px #2563eb44,
+    0 1px 0 #fff4;
+  opacity: 1;
+}
+
+.stackrefined-banner .brand {
+  color: #174ea6; /* Deep blue for contrast */
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  /* Add a black border (stroke) for extra pop */
+  -webkit-text-stroke: 1.2px #111;
+  text-stroke: 1.2px #111;
+  /* Optional: subtle glow for even more separation */
+  text-shadow:
+    0 2px 16px #174ea655,
+    0 0 8px #fff8;
+}
+
 /* Responsive tweaks */
 @media (max-width: 600px) {
   .login-header-row {
