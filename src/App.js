@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { SnackbarProvider } from 'notistack';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -21,4 +22,10 @@ function App() {
   );
 }
 
-export default App;
+export default function RootApp() {
+  return (
+    <SnackbarProvider maxSnack={3}>
+      <App />
+    </SnackbarProvider>
+  );
+}
