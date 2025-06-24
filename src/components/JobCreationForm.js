@@ -1,3 +1,7 @@
+// --- JobCreationForm ---
+// This component handles both single job creation and bulk job import (JSON/CSV) for dispatchers.
+// It leverages Material UI for a modern UI, and supports drag-and-drop CSV import for business users.
+
 import React, { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { collection, addDoc, getDocs, serverTimestamp } from "firebase/firestore";
@@ -9,6 +13,7 @@ import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import { useUser } from "../contexts/UserContext";
 import { useNotification } from "../contexts/NotificationContext";
+import { useDropzone } from 'react-dropzone';
 
 export default function JobCreationForm() {
   // Local state for all the job fields and bulk import
@@ -27,7 +32,7 @@ export default function JobCreationForm() {
   const { setSnack } = useNotification();
 
   useEffect(() => {
-    // Grab all users with the 'technician' role so we can assign jobs to them
+    // Fetch all users with the 'technician' role for assignment dropdown
     async function fetchTechs() {
       const usersSnap = await getDocs(collection(db, "users"));
       const techList = [];
@@ -42,18 +47,17 @@ export default function JobCreationForm() {
     fetchTechs();
   }, []);
 
-  // When the dispatcher submits the form, create a new job in Firestore
+  // Handles single job creation and resets the form on success
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Oops! Make sure a tech is assigned before creating the job
-    if (!assignedTo) return;
+    if (!assignedTo) return; // Prevent job creation without a technician
     await addDoc(collection(db, "jobs"), {
       title,
       description,
       assignedTo,
       status: "assigned",
-      createdAt: serverTimestamp(),      // Always store UTC timestamp
-      lastUpdatedAt: serverTimestamp(),  // Ditto for last update
+      createdAt: serverTimestamp(),
+      lastUpdatedAt: serverTimestamp(),
       createdBy: user?.uid || "unknown",
       confirmedAt: null,
       confirmedBy: null,
@@ -62,7 +66,6 @@ export default function JobCreationForm() {
       estimatedCompletion,
       closingNotes: "",
     });
-    // Reset the form so it's ready for the next job
     setTitle("");
     setDescription("");
     setAssignedTo("");
@@ -72,8 +75,8 @@ export default function JobCreationForm() {
     setSnack({ open: true, message: "Action successful!", severity: "success" });
   };
 
-  // Handle bulk job import from pasted JSON.
-  // This is a lifesaver for dispatchers who need to enter a bunch of jobs at once!
+  // Handles bulk job import from pasted JSON array
+  // Useful for dispatchers who need to enter multiple jobs at once
   const handleBulkImport = async () => {
     setBulkResult(null);
     let jobs;
@@ -105,7 +108,7 @@ export default function JobCreationForm() {
         success++;
       } catch (err) {
         failed++;
-        // If something goes wrong, let the dispatcher know which row failed
+        // Track which row failed for better user feedback
         errors.push(`Row ${i + 1}: ${err.message}`);
       }
     }
@@ -113,7 +116,8 @@ export default function JobCreationForm() {
     setBulkJson("");
   };
 
-  // CSV import handler
+  // Handles CSV file import and preview using PapaParse
+  // Converts CSV rows to job objects for review before import
   const handleCsvImport = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -137,11 +141,18 @@ export default function JobCreationForm() {
     });
   };
 
+  // Drag-and-drop support for CSV import, using react-dropzone
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { 'text/csv': ['.csv'] },
+    onDrop: (acceptedFiles) => handleCsvImport({ target: { files: acceptedFiles } }),
+  });
+
   return (
     <Paper sx={{ p: 3, mb: 4 }}>
       <Typography variant="h6" gutterBottom>
         Create Job
       </Typography>
+      {/* Single job creation form */}
       <form onSubmit={handleSubmit}>
         <TextField
           label="Title"
@@ -330,6 +341,7 @@ export default function JobCreationForm() {
           Create Job
         </Button>
       </form>
+      {/* Bulk import section for JSON array */}
       <Typography variant="subtitle1" sx={{ mt: 4, mb: 1, fontWeight: 700 }}>
         Bulk Import Jobs (Paste JSON Array)
       </Typography>
@@ -378,10 +390,15 @@ export default function JobCreationForm() {
           )}
         </Paper>
       )}
+      {/* CSV import section with both file picker and drag-and-drop */}
       <Button variant="outlined" component="label" sx={{ mb: 2 }}>
         Import from CSV
         <input type="file" accept=".csv" hidden onChange={handleCsvImport} />
       </Button>
+      <div {...getRootProps()} className="csv-dropzone">
+        <input {...getInputProps()} />
+        {isDragActive ? "Drop the CSV here..." : "Drag & drop CSV here, or click to select"}
+      </div>
       {csvError && (
         <Typography color="error" sx={{ mb: 2 }}>
           {csvError}
