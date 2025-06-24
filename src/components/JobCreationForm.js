@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Papa from "papaparse";
 import { collection, addDoc, getDocs, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import TextField from "@mui/material/TextField";
@@ -20,6 +21,8 @@ export default function JobCreationForm() {
   const [techs, setTechs] = useState([]);
   const [bulkJson, setBulkJson] = useState("");
   const [bulkResult, setBulkResult] = useState(null);
+  const [csvPreview, setCsvPreview] = useState([]);
+  const [csvError, setCsvError] = useState("");
   const { user } = useUser();
   const { setSnack } = useNotification();
 
@@ -108,6 +111,30 @@ export default function JobCreationForm() {
     }
     setBulkResult({ success, failed, errors });
     setBulkJson("");
+  };
+
+  // CSV import handler
+  const handleCsvImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        if (results.errors && results.errors.length > 0) {
+          setCsvError("CSV parsing error: " + results.errors[0].message);
+          setCsvPreview([]);
+          return;
+        }
+        setCsvError("");
+        setCsvPreview(results.data);
+        // Optionally, setBulkJson(JSON.stringify(results.data, null, 2));
+      },
+      error: (err) => {
+        setCsvError("CSV parsing error: " + err.message);
+        setCsvPreview([]);
+      }
+    });
   };
 
   return (
@@ -349,6 +376,23 @@ export default function JobCreationForm() {
               ))}
             </ul>
           )}
+        </Paper>
+      )}
+      <Button variant="outlined" component="label" sx={{ mb: 2 }}>
+        Import from CSV
+        <input type="file" accept=".csv" hidden onChange={handleCsvImport} />
+      </Button>
+      {csvError && (
+        <Typography color="error" sx={{ mb: 2 }}>
+          {csvError}
+        </Typography>
+      )}
+      {csvPreview.length > 0 && (
+        <Paper sx={{ p: 2, mb: 2, background: "#f6faff" }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>CSV Preview:</Typography>
+          <pre style={{ fontSize: 12, background: "#eaf6fb", padding: 8, borderRadius: 4, overflowX: "auto" }}>
+            {JSON.stringify(csvPreview, null, 2)}
+          </pre>
         </Paper>
       )}
     </Paper>
