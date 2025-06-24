@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, getDocs, query, orderBy, limit, updateDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
@@ -14,32 +14,16 @@ import Select from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { logJobChange } from "../utils/jobChangeLogger";
 import { useUser } from "../contexts/UserContext";
+import TechnicianMap from "./TechnicianMap";
 
 export default function JobsTable() {
   const [jobs, setJobs] = useState([]);
-  const [users, setUsers] = useState({});
+  const [locations, setLocations] = useState([]);
   const [techs, setTechs] = useState([]);
+  const [users, setUsers] = useState({});
   const { user } = useUser();
 
   useEffect(() => {
-    // Grab all users so we can show emails instead of just UIDs
-    async function fetchUsers() {
-      const usersSnap = await getDocs(collection(db, "users"));
-      const userMap = {};
-      const techList = [];
-      usersSnap.forEach((doc) => {
-        const data = doc.data();
-        userMap[doc.id] = data.email || doc.id;
-        if (data.role === "technician") {
-          techList.push({ uid: doc.id, email: data.email });
-        }
-      });
-      setUsers(userMap);
-      setTechs(techList);
-    }
-    fetchUsers();
-
-    // Listen for job updates in real time so the table is always fresh
     const unsub = onSnapshot(collection(db, "jobs"), (snapshot) => {
       const jobsData = [];
       snapshot.forEach((doc) => jobsData.push({ id: doc.id, ...doc.data() }));
@@ -48,14 +32,59 @@ export default function JobsTable() {
     return () => unsub();
   }, []);
 
-  // Format Firestore Timestamp or JS Date for display in the user's local timezone
+  useEffect(() => {
+    // For each job, fetch the latest location (one marker per job)
+    async function fetchLatestLocations() {
+      let latestLocations = [];
+      for (const job of jobs) {
+        const locQuery = query(
+          collection(db, "jobs", job.id, "locations"),
+          orderBy("timestamp", "desc"),
+          limit(1)
+        );
+        const locSnap = await getDocs(locQuery);
+        locSnap.forEach((doc) => {
+          const loc = doc.data();
+          if (typeof loc.lat === "number" && typeof loc.lng === "number") {
+            latestLocations.push({
+              lat: loc.lat,
+              lng: loc.lng,
+              label: job.title ? job.title : `Job ${job.id.slice(-4)}`,
+              jobId: job.id,
+              timestamp: loc.timestamp,
+            });
+          }
+        });
+      }
+      setLocations(latestLocations);
+    }
+    if (jobs.length) fetchLatestLocations();
+  }, [jobs]);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      const usersSnap = await getDocs(collection(db, "users"));
+      const usersMap = {};
+      const techList = [];
+      usersSnap.forEach((doc) => {
+        const data = doc.data();
+        usersMap[doc.id] = data.email || data.name || doc.id;
+        if (data.role === "technician") {
+          techList.push({ uid: doc.id, email: data.email });
+        }
+      });
+      setUsers(usersMap);
+      setTechs(techList);
+    }
+    fetchUsers();
+  }, []);
+
   const formatDate = (date) => {
     if (!date) return "N/A";
     if (date.seconds) return new Date(date.seconds * 1000).toLocaleString();
     return new Date(date).toLocaleString();
   };
 
-  // When a dispatcher/admin reassigns a job, update the assigned tech and log the change
   const handleReassign = async (job, newTechUid) => {
     const oldTechUid = job.assignedTo;
     await updateDoc(doc(db, "jobs", job.id), {
@@ -63,7 +92,6 @@ export default function JobsTable() {
       lastUpdatedAt: new Date(),
       lastUpdatedBy: user?.uid || "unknown",
     });
-    // Make a note in the audit log so we know who reassigned the job (and to whom)
     await logJobChange(
       job.id,
       "reassignment",
@@ -73,14 +101,12 @@ export default function JobsTable() {
     );
   };
 
-  // If a job needs to be cancelled, update its status and log the action for transparency
   const handleCancel = async (job) => {
     await updateDoc(doc(db, "jobs", job.id), {
       status: "cancelled",
       lastUpdatedAt: new Date(),
       lastUpdatedBy: user?.uid || "unknown",
     });
-    // Log the cancellation so we have a record of who did it and when
     await logJobChange(
       job.id,
       "cancellation",
@@ -90,15 +116,16 @@ export default function JobsTable() {
     );
   };
 
+  console.log("Locations passed to map:", JSON.stringify(locations, null, 2));
+
   return (
-    <Paper sx={{ p: 3, mb: 4 }}>
-      <Typography variant="h6" gutterBottom sx={{
-        fontWeight: 900,
-        fontFamily: "'Montserrat', 'Inter', 'Poppins', Arial, sans-serif",
-        color: "#174ea6"
-      }}>
+    <Paper sx={{ p: 2, mt: 2, maxWidth: 1100, margin: "0 auto" }}>
+      <Typography variant="h6" sx={{ mb: 2 }}>
         Jobs Table
       </Typography>
+      <div style={{ width: 340, height: 180, margin: "0 auto 24px auto", borderRadius: 12, overflow: "hidden", border: "1.5px solid #eaf1fb", boxShadow: "0 2px 12px #2563eb11" }}>
+        <TechnicianMap locations={locations} height={180} width={340} />
+      </div>
       <TableContainer>
         <Table>
           <TableHead>
